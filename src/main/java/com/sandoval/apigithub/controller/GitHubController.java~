@@ -1,0 +1,40 @@
+package com.sandoval.apigithub.controller;
+
+import com.sandoval.apigithub.dto.GitHubUser;
+import com.sandoval.apigithub.service.GitHubService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/api/github")
+public class GitHubController {
+
+  @Autowired
+  private final GitHubService gitHubService;
+
+  public GitHubController(GitHubService gitHubService) {
+    this.gitHubService = gitHubService;
+  }
+
+
+  @GetMapping("/users")
+  public List<GitHubUser> searchUsers(@RequestParam String username) {
+    Map response = gitHubService.searchUsers(username);
+    List<Map<String, Object>> items = (List<Map<String, Object>>) response.get("items");
+
+    return items.stream().map(item -> {
+      GitHubUser user = new GitHubUser();
+      user.setLogin((String) item.get("login"));
+      user.setAvatar_url((String) item.get("avatar_url"));
+      user.setHtml_url((String) item.get("html_url"));
+      return user;
+    }).collect(Collectors.toList());
+  }
+}
